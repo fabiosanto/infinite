@@ -16,9 +16,9 @@ class MessagesAdapter(private val onEndReached: (String) -> Unit) :
 
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
-            is Item.LoadingFooter -> R.layout.footer_item//add layouts
-            is Item.Message -> R.layout.message_item//add layouts
-            is Item.LoadingMessage -> R.layout.loading_message_item//add layouts
+            is Item.LoadingFooter -> R.layout.footer_item
+            is Item.Message -> R.layout.message_item
+            is Item.LoadingMessage -> R.layout.loading_message_item
         }
     }
 
@@ -40,20 +40,23 @@ class MessagesAdapter(private val onEndReached: (String) -> Unit) :
         abstract fun onBind(item: Item)
     }
 
-    class MessageVH(itemView: View) : ItemVH(itemView) {
+    internal class MessageVH(itemView: View) : ItemVH(itemView) {
         override fun onBind(item: Item) {
             item as Item.Message
             itemView.textView.text = item.data.content
-            Picasso.get().load(item.data.author.photoUrl.toApiUrl())
+            itemView.author.text = item.data.author.name
+            itemView.time.text = item.data.updated
+            Picasso.get().load(item.data.author.photoUrl.toApiUrl()) //is this efficient?
+                .transform(CircleTransform())
                 .placeholder(R.drawable.avatar_placeholder).into(itemView.imageView)
         }
     }
 
-    class LoadingMessageVH(itemView: View) : ItemVH(itemView) {
+    internal class LoadingMessageVH(itemView: View) : ItemVH(itemView) {
         override fun onBind(item: Item) {}
     }
 
-    class LoadingFooterVH(private val onEndReached: (String) -> Unit, itemView: View) :
+    internal class LoadingFooterVH(private val onEndReached: (String) -> Unit, itemView: View) :
         ItemVH(itemView) {
         override fun onBind(item: Item) {
             item as Item.LoadingFooter
