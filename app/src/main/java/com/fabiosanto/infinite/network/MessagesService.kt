@@ -1,10 +1,12 @@
 package com.fabiosanto.infinite.network
 
-import retrofit2.Call
+import kotlinx.coroutines.Deferred
 import retrofit2.http.GET
+import retrofit2.http.Query
 
 interface MessagesService {
     @GET("messages")
-    fun messages(): Call<MessagesResponse>
+    fun messages(@Query("pageToken") pageToken: String?,
+                 @Query("limit") limit: Int = 5): Deferred<MessagesResponse>
 }
 

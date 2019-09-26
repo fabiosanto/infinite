@@ -5,11 +5,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.fabiosanto.infinite.network.MessageData
 import com.fabiosanto.infinite.network.Repo
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
-class MessagesViewModel : ViewModel() {
+class MessagesViewModel : ViewModel(), CoroutineScope {
+    override val coroutineContext = Dispatchers.IO + Job()
 
     private val repo = Repo()
-    private var lastToken: String? = null
 
     private val items by lazy {
         MutableLiveData<List<Item>>().apply {
@@ -21,26 +23,28 @@ class MessagesViewModel : ViewModel() {
         get() = items
 
     init {
-        loadMore()
+        loadMore(null)
     }
 
-    fun loadMore() {
-        //todo async coroutine
+    fun loadMore(pageToken: String?) = launch {
+        val resultPair = repo.getMessages(pageToken)
+        val messages = resultPair.second
+        val newPageToken = resultPair.first
 
-        val messages = repo.getMessages(lastToken)
         val list = items.value ?: arrayListOf()
 
         val newList = arrayListOf<Item>()
-        list.filterTo(newList, {it is Item.Message})
+        list.filterTo(newList, { it is Item.Message }) //tobe improved!
         messages.mapTo(newList, { Item.Message(it) })
-        newList.add(Item.LoadingFooter)
+        newList.add(Item.LoadingFooter(newPageToken))
 
         items.postValue(newList)
     }
+
 }
 
 sealed class Item {
-    class Message(data: MessageData) : Item()
-    object LoadingFooter : Item()
+    class Message(val data: MessageData) : Item()
+    class LoadingFooter(val pageToken: String) : Item()
     object LoadingMessage : Item()
 }

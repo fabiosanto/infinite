@@ -1,22 +1,27 @@
 package com.fabiosanto.infinite.network
 
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 
 class Repo {
+    companion object {
+        const val BASE_URL = "https://message-list.appspot.com/"
+    }
+
     private var retrofit = Retrofit.Builder()
-        .baseUrl("http://message-list.appspot.com/")
+        .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
+        .addCallAdapterFactory(CoroutineCallAdapterFactory())
         .build()
     private var service = retrofit.create(MessagesService::class.java)
 
-    fun getMessages(token: String?): List<MessageData> {
+    suspend fun getMessages(pageToken: String?): Pair<String, List<MessageData>> {
 
-        val response = service.messages().execute()
-        return response.body()?.messages ?: listOf()
+        val response = service.messages(pageToken).await()
+        return Pair(response.pageToken, response.messages)
     }
 }
+
+fun String.toApiUrl() = Repo.BASE_URL + this

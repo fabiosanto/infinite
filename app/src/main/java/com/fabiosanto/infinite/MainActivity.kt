@@ -14,7 +14,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        messagesAdapter = MessagesAdapter { viewModel.loadMore() }
+        messagesAdapter = MessagesAdapter { pageToken -> viewModel.loadMore(pageToken) }
         recyclerView.adapter = messagesAdapter
 
         viewModel.itemsObservable.observe(this, Observer {

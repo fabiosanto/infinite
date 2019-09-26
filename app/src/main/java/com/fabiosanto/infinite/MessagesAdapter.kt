@@ -6,10 +6,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.fabiosanto.infinite.network.toApiUrl
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.message_item.view.*
 import java.lang.UnsupportedOperationException
 
-class MessagesAdapter(private val onEndReached: () -> Unit) :
+class MessagesAdapter(private val onEndReached: (String) -> Unit) :
     ListAdapter<Item, MessagesAdapter.ItemVH>(DIFF) {
 
     override fun getItemViewType(position: Int): Int {
@@ -26,32 +28,36 @@ class MessagesAdapter(private val onEndReached: () -> Unit) :
             R.layout.message_item -> MessageVH(view)
             R.layout.footer_item -> LoadingFooterVH(onEndReached, view)
             R.layout.loading_message_item -> LoadingMessageVH(view)
-            else -> throw UnsupportedOperationException()//improve?
+            else -> throw UnsupportedOperationException() //improve?
         }
     }
 
     override fun onBindViewHolder(holder: ItemVH, position: Int) {
-        holder.onBind()
+        holder.onBind(getItem(position))
     }
 
     abstract class ItemVH(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        abstract fun onBind()
+        abstract fun onBind(item: Item)
     }
 
     class MessageVH(itemView: View) : ItemVH(itemView) {
-        override fun onBind() {
-            itemView.textView.text = "message $adapterPosition"
+        override fun onBind(item: Item) {
+            item as Item.Message
+            itemView.textView.text = item.data.content
+            Picasso.get().load(item.data.author.photoUrl.toApiUrl())
+                .placeholder(R.drawable.avatar_placeholder).into(itemView.imageView)
         }
     }
 
     class LoadingMessageVH(itemView: View) : ItemVH(itemView) {
-        override fun onBind() {
-        }
+        override fun onBind(item: Item) {}
     }
 
-    class LoadingFooterVH(private val onEndReached: () -> Unit, itemView: View) : ItemVH(itemView) {
-        override fun onBind() {
-            onEndReached()
+    class LoadingFooterVH(private val onEndReached: (String) -> Unit, itemView: View) :
+        ItemVH(itemView) {
+        override fun onBind(item: Item) {
+            item as Item.LoadingFooter
+            onEndReached(item.pageToken)
         }
     }
 
