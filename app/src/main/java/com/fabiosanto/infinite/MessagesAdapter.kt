@@ -3,6 +3,7 @@ package com.fabiosanto.infinite
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -11,7 +12,10 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.message_item.view.*
 import java.lang.UnsupportedOperationException
 
-class MessagesAdapter(private val onEndReached: (String) -> Unit) :
+class MessagesAdapter(
+    private val onEndReached: (String) -> Unit,
+    private val onRetryClicked: (String) -> Unit
+) :
     ListAdapter<Item, MessagesAdapter.ItemVH>(DIFF) {
 
     override fun getItemViewType(position: Int): Int {
@@ -19,6 +23,8 @@ class MessagesAdapter(private val onEndReached: (String) -> Unit) :
             is Item.LoadingFooter -> R.layout.footer_item
             is Item.Message -> R.layout.message_item
             is Item.LoadingMessage -> R.layout.loading_message_item
+            is Item.LoadingErrorPage -> R.layout.loading_error_page
+            is Item.LoadingErrorCard -> R.layout.loading_error_item
         }
     }
 
@@ -28,6 +34,8 @@ class MessagesAdapter(private val onEndReached: (String) -> Unit) :
             R.layout.message_item -> MessageVH(view)
             R.layout.footer_item -> LoadingFooterVH(onEndReached, view)
             R.layout.loading_message_item -> LoadingMessageVH(view)
+            R.layout.loading_error_item -> LoadingErrorVH(onRetryClicked, view)
+            R.layout.loading_error_page -> LoadingErrorVH(onRetryClicked, view)
             else -> throw UnsupportedOperationException() //improve?
         }
     }
@@ -54,6 +62,14 @@ class MessagesAdapter(private val onEndReached: (String) -> Unit) :
 
     internal class LoadingMessageVH(itemView: View) : ItemVH(itemView) {
         override fun onBind(item: Item) {}
+    }
+
+    internal class LoadingErrorVH(private val onRetryClicked: (String) -> Unit, itemView: View) :
+        ItemVH(itemView) {
+        override fun onBind(item: Item) {
+            item as Item.LoadingErrorCard
+            itemView.findViewById<Button>(R.id.retry).setOnClickListener { onRetryClicked(item.pageToken) }
+        }
     }
 
     internal class LoadingFooterVH(private val onEndReached: (String) -> Unit, itemView: View) :
