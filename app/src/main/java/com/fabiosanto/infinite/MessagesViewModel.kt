@@ -7,7 +7,6 @@ import com.fabiosanto.infinite.network.MessageData
 import com.fabiosanto.infinite.network.Repo
 import kotlinx.coroutines.*
 import java.lang.Exception
-import kotlin.coroutines.CoroutineContext
 
 class MessagesViewModel : ViewModel(), CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
@@ -16,14 +15,12 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
 
     private val items by lazy {
         MutableLiveData<List<Item>>().apply {
-            postValue(arrayListOf(Item.LoadingMessage, Item.LoadingMessage, Item.LoadingMessage))
+            postValue(arrayListOf())
         }
     }
 
     private val viewState by lazy {
-        MutableLiveData<ViewState>().apply {
-            postValue(ViewState.READY)
-        }
+        MutableLiveData<ViewState>()
     }
 
     val itemsObservable: LiveData<List<Item>>
@@ -32,6 +29,7 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
         get() = viewState
 
     init {
+        viewState.postValue(ViewState.LOADING)
         loadMore(null)
     }
 
@@ -69,9 +67,8 @@ sealed class Item {
     class LoadingFooter(val pageToken: String) : Item()
     class LoadingErrorCard(val pageToken: String) : Item()
     object LoadingErrorPage : Item()
-    object LoadingMessage : Item()
 }
 
 enum class ViewState {
-    READY, ERROR
+    READY, ERROR, LOADING
 }

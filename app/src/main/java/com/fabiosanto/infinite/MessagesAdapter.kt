@@ -22,7 +22,6 @@ class MessagesAdapter(
         return when (getItem(position)) {
             is Item.LoadingFooter -> R.layout.footer_item
             is Item.Message -> R.layout.message_item
-            is Item.LoadingMessage -> R.layout.loading_message_item
             is Item.LoadingErrorPage -> R.layout.loading_error_page
             is Item.LoadingErrorCard -> R.layout.loading_error_item
         }
@@ -33,7 +32,6 @@ class MessagesAdapter(
         return when (viewType) {
             R.layout.message_item -> MessageVH(view)
             R.layout.footer_item -> LoadingFooterVH(onEndReached, view)
-            R.layout.loading_message_item -> LoadingMessageVH(view)
             R.layout.loading_error_item -> LoadingErrorVH(onRetryClicked, view)
             R.layout.loading_error_page -> LoadingErrorVH(onRetryClicked, view)
             else -> throw UnsupportedOperationException() //improve?
@@ -58,10 +56,6 @@ class MessagesAdapter(
                 .transform(CircleTransform())
                 .placeholder(R.drawable.avatar_placeholder).into(itemView.imageView)
         }
-    }
-
-    internal class LoadingMessageVH(itemView: View) : ItemVH(itemView) {
-        override fun onBind(item: Item) {}
     }
 
     internal class LoadingErrorVH(private val onRetryClicked: (String) -> Unit, itemView: View) :
