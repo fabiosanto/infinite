@@ -3,4 +3,6 @@
     <string name="retry">Retry</string>
     <string name="loading_error_subtitle">Have you tried checking your internet connection?</string>
     <string name="loading_error_title">Something went wrong while loading the messages...</string>
+    <string name="dismissed_message">Message dismissed</string>
+    <string name="undo">UNDO</string>
 </resources>

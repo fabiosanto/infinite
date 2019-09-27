@@ -28,6 +28,8 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
     val viewStateObservable: LiveData<ViewState>
         get() = viewState
 
+    private var lastDismissed: Pair<Int, Item.Message>? = null
+
     init {
         viewState.postValue(ViewState.LOADING)
         loadMore(null)
@@ -64,11 +66,30 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
     fun itemDismissed(position: Int) {
         items.value?.let {
             val newList = arrayListOf<Item>()
-            it.mapTo(newList, { item ->  item })
+            it.mapTo(newList, { item -> item })
+
+            val item = newList[position]
+            lastDismissed = Pair(position, item as Item.Message)
+
             newList.removeAt(position)
 
             items.postValue(newList)
         }
+    }
+
+    fun undoDismissal() {
+        if (lastDismissed == null)
+            return
+
+        items.value?.let {
+            val newList = arrayListOf<Item>()
+            it.mapTo(newList, { item -> item })
+
+            newList.add(lastDismissed!!.first, lastDismissed!!.second)
+            items.postValue(newList)
+        }
+
+        lastDismissed = null
     }
 }
 

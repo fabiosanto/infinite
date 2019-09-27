@@ -1,12 +1,14 @@
 package com.fabiosanto.infinite
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.fabiosanto.infinite.databinding.ActivityMainBinding
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.loading_error_page.*
 
@@ -54,7 +56,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-           viewModel.itemDismissed(viewHolder.adapterPosition)
+            viewModel.itemDismissed(viewHolder.adapterPosition)
+            showSnackbarMessageDismissed()
         }
+    }
+
+    private fun showSnackbarMessageDismissed() {
+        Snackbar.make(
+            recyclerView,
+            getString(R.string.dismissed_message),
+            Snackbar.LENGTH_SHORT
+        ).setAction(getString(R.string.undo)) {
+            viewModel.undoDismissal()
+        }.show()
     }
 }
