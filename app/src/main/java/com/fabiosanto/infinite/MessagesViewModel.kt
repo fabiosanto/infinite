@@ -20,8 +20,16 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
         }
     }
 
+    private val viewState by lazy {
+        MutableLiveData<ViewState>().apply {
+            postValue(ViewState.READY)
+        }
+    }
+
     val itemsObservable: LiveData<List<Item>>
         get() = items
+    val viewStateObservable: LiveData<ViewState>
+        get() = viewState
 
     init {
         loadMore(null)
@@ -30,6 +38,7 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
     fun loadMore(pageToken: String?) = launch {
         val list = items.value ?: arrayListOf()
         val newList = arrayListOf<Item>()
+
         try {
             val resultPair = repo.getMessages(pageToken)
             val messages = resultPair.second
@@ -40,6 +49,8 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
             newList.add(Item.LoadingFooter(newPageToken))
 
             items.postValue(newList)
+            viewState.postValue(ViewState.READY)
+
         } catch (e: Exception) {
 
             if (list.isNotEmpty() && pageToken != null) {
@@ -47,7 +58,7 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
                 newList.add(Item.LoadingErrorCard(pageToken))
                 items.postValue(newList)
             } else {
-//                items.postValue(arrayListOf(Item.LoadingErrorPage()))
+                viewState.postValue(ViewState.ERROR)
             }
         }
     }
@@ -59,4 +70,8 @@ sealed class Item {
     class LoadingErrorCard(val pageToken: String) : Item()
     object LoadingErrorPage : Item()
     object LoadingMessage : Item()
+}
+
+enum class ViewState {
+    READY, ERROR
 }
