@@ -60,6 +60,16 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
             }
         }
     }
+
+    fun itemDismissed(position: Int) {
+        items.value?.let {
+            val newList = arrayListOf<Item>()
+            it.mapTo(newList, { item ->  item })
+            newList.removeAt(position)
+
+            items.postValue(newList)
+        }
+    }
 }
 
 sealed class Item {

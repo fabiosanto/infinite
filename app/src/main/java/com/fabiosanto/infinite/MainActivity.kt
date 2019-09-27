@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.fabiosanto.infinite.databinding.ActivityMainBinding
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.loading_error_page.*
@@ -26,6 +28,9 @@ class MainActivity : AppCompatActivity() {
         recyclerView.addItemDecoration(VerticalSpace())
         recyclerView.adapter = messagesAdapter
 
+        val itemTouchHelper = ItemTouchHelper(swipeCallback)
+        itemTouchHelper.attachToRecyclerView(recyclerView)
+
         retry.setOnClickListener {
             viewModel.loadMore(null)
         }
@@ -36,5 +41,20 @@ class MainActivity : AppCompatActivity() {
         viewModel.viewStateObservable.observe(this, Observer {
             binding.viewState = it
         })
+    }
+
+    private val swipeCallback = object :
+        ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            return false
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+           viewModel.itemDismissed(viewHolder.adapterPosition)
+        }
     }
 }

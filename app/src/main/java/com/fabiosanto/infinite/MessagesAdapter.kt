@@ -80,6 +80,9 @@ class MessagesAdapter(
         }
 
         override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
+            if (oldItem is Item.Message && newItem is Item.Message)
+                return oldItem.data.id == newItem.data.id
+
             return false
         }
     }
