@@ -7,6 +7,6 @@ import retrofit2.http.Query
 interface MessagesService {
     @GET("messages")
     fun messages(@Query("pageToken") pageToken: String?,
-                 @Query("limit") limit: Int = 5): Deferred<MessagesResponse>
+                 @Query("limit") limit: Int = 10): Deferred<MessagesResponse>
 }
 

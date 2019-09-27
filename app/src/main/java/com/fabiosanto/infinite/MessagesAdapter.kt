@@ -20,7 +20,7 @@ class MessagesAdapter(
 
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
-            is Item.LoadingFooter -> R.layout.footer_item
+            is Item.LoadingFooter -> R.layout.loading_message_item
             is Item.Message -> R.layout.message_item
             is Item.LoadingErrorPage -> R.layout.loading_error_page
             is Item.LoadingErrorCard -> R.layout.loading_error_item
@@ -31,7 +31,7 @@ class MessagesAdapter(
         val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
         return when (viewType) {
             R.layout.message_item -> MessageVH(view)
-            R.layout.footer_item -> LoadingFooterVH(onEndReached, view)
+            R.layout.loading_message_item -> LoadingFooterVH(onEndReached, view)
             R.layout.loading_error_item -> LoadingErrorVH(onRetryClicked, view)
             R.layout.loading_error_page -> LoadingErrorVH(onRetryClicked, view)
             else -> throw UnsupportedOperationException() //improve?
