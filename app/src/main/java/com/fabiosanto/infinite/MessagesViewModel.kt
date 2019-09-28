@@ -1,5 +1,6 @@
 package com.fabiosanto.infinite
 
+import android.text.format.DateUtils
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,11 +8,14 @@ import com.fabiosanto.infinite.network.MessageData
 import com.fabiosanto.infinite.network.Repo
 import kotlinx.coroutines.*
 import java.lang.Exception
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MessagesViewModel : ViewModel(), CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
 
     private val repo = Repo()
+    private val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
 
     private val items by lazy {
         MutableLiveData<List<Item>>().apply {
@@ -45,7 +49,7 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
             val newPageToken = resultPair.first
 
             list.filterTo(newList, { it is Item.Message }) //tobe improved!
-            messages.mapTo(newList, { Item.Message(it) })
+            messages.mapTo(newList, { getMessageItem(it) })
             newList.add(Item.LoadingFooter(newPageToken))
 
             items.postValue(newList)
@@ -61,6 +65,18 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
                 viewState.postValue(ViewState.ERROR)
             }
         }
+    }
+
+    private fun getMessageItem(data: MessageData): Item.Message {
+
+        val authorPhoto = Repo.BASE_URL + data.author.photoUrl
+        val timeMillis = dateFormatter.parse(data.updated)?.time ?: 0
+        val timeString = DateUtils.getRelativeTimeSpanString(
+            timeMillis,
+            System.currentTimeMillis(),
+            DateUtils.DAY_IN_MILLIS
+        )
+        return Item.Message(data.id, data.author.name, authorPhoto, data.content, timeString.toString())
     }
 
     fun itemDismissed(position: Int) {
@@ -94,7 +110,14 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
 }
 
 sealed class Item {
-    class Message(val data: MessageData) : Item()
+    class Message(
+        val id: Int,
+        val authorName: String,
+        val authorPhotoUrl: String,
+        val content: String,
+        val time: String
+    ) : Item()
+
     class LoadingFooter(val pageToken: String) : Item()
     class LoadingErrorCard(val pageToken: String) : Item()
     object LoadingErrorPage : Item()

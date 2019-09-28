@@ -1,20 +1,22 @@
 package com.fabiosanto.infinite
 
+import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.fabiosanto.infinite.network.toApiUrl
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.message_item.view.*
 import java.lang.UnsupportedOperationException
 
 class MessagesAdapter(
     private val onEndReached: (String) -> Unit,
-    private val onRetryClicked: (String) -> Unit
+    private val onRetryClicked: (String) -> Unit,
+    private val onItemDismissed: (Int) -> Unit
 ) :
     ListAdapter<Item, MessagesAdapter.ItemVH>(DIFF) {
 
@@ -49,10 +51,11 @@ class MessagesAdapter(
     internal class MessageVH(itemView: View) : ItemVH(itemView) {
         override fun onBind(item: Item) {
             item as Item.Message
-            itemView.textView.text = item.data.content
-            itemView.author.text = item.data.author.name
-            itemView.time.text = item.data.updated
-            Picasso.get().load(item.data.author.photoUrl.toApiUrl()) //is this efficient?
+            itemView.textView.text = item.content
+            itemView.author.text = item.authorName
+            itemView.time.text = item.time
+
+            Picasso.get().load(item.authorPhotoUrl) //is this efficient?
                 .transform(CircleTransform())
                 .placeholder(R.drawable.avatar_placeholder).into(itemView.imageView)
         }
@@ -62,7 +65,8 @@ class MessagesAdapter(
         ItemVH(itemView) {
         override fun onBind(item: Item) {
             item as Item.LoadingErrorCard
-            itemView.findViewById<Button>(R.id.retry).setOnClickListener { onRetryClicked(item.pageToken) }
+            itemView.findViewById<Button>(R.id.retry)
+                .setOnClickListener { onRetryClicked(item.pageToken) }
         }
     }
 
@@ -81,9 +85,32 @@ class MessagesAdapter(
 
         override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
             if (oldItem is Item.Message && newItem is Item.Message)
-                return oldItem.data.id == newItem.data.id
+                return oldItem.id == newItem.id
 
             return false
+        }
+    }
+
+    val swipeCallback = object :
+        ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            return false
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            onItemDismissed(viewHolder.adapterPosition)
+        }
+
+        override fun getSwipeDirs(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder
+        ): Int {
+            if (viewHolder !is MessagesAdapter.MessageVH) return 0;
+            return super.getSwipeDirs(recyclerView, viewHolder)
         }
     }
 }

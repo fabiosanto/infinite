@@ -1,12 +1,10 @@
 package com.fabiosanto.infinite
 
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView
 import com.fabiosanto.infinite.databinding.ActivityMainBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
@@ -25,12 +23,16 @@ class MainActivity : AppCompatActivity() {
 
         supportActionBar?.setTitle(R.string.app_name)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationIcon(R.drawable.ic_menu_black_24dp)
 
-        messagesAdapter = MessagesAdapter({ viewModel.loadMore(it) }, { viewModel.loadMore(it) })
+        messagesAdapter = MessagesAdapter({ viewModel.loadMore(it) },
+            { viewModel.loadMore(it) },
+            { viewModel.itemDismissed(it); showSnackbarMessageDismissed() })
+
         recyclerView.addItemDecoration(VerticalSpace())
         recyclerView.adapter = messagesAdapter
 
-        val itemTouchHelper = ItemTouchHelper(swipeCallback)
+        val itemTouchHelper = ItemTouchHelper(messagesAdapter.swipeCallback)
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
         retry.setOnClickListener {
@@ -43,22 +45,6 @@ class MainActivity : AppCompatActivity() {
         viewModel.viewStateObservable.observe(this, Observer {
             binding.viewState = it
         })
-    }
-
-    private val swipeCallback = object :
-        ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
-        override fun onMove(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            target: RecyclerView.ViewHolder
-        ): Boolean {
-            return false
-        }
-
-        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            viewModel.itemDismissed(viewHolder.adapterPosition)
-            showSnackbarMessageDismissed()
-        }
     }
 
     private fun showSnackbarMessageDismissed() {

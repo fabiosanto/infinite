@@ -23,5 +23,3 @@ class Repo {
         return Pair(response.pageToken, response.messages)
     }
 }
-
-fun String.toApiUrl() = Repo.BASE_URL + this
