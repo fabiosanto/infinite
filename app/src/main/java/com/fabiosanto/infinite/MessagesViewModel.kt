@@ -74,9 +74,15 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
         val timeString = DateUtils.getRelativeTimeSpanString(
             timeMillis,
             System.currentTimeMillis(),
-            DateUtils.DAY_IN_MILLIS
+            DateUtils.MINUTE_IN_MILLIS
         )
-        return Item.Message(data.id, data.author.name, authorPhoto, data.content, timeString.toString())
+        return Item.Message(
+            data.id,
+            data.author.name,
+            authorPhoto,
+            data.content,
+            timeString.toString()
+        )
     }
 
     fun itemDismissed(position: Int) {
