@@ -1,6 +1,5 @@
 package com.fabiosanto.infinite
 
-import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,8 +9,8 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.loading_error_item.view.*
 import kotlinx.android.synthetic.main.message_item.view.*
-import java.lang.UnsupportedOperationException
 
 class MessagesAdapter(
     private val onEndReached: (String) -> Unit,
@@ -55,7 +54,7 @@ class MessagesAdapter(
             itemView.author.text = item.authorName
             itemView.time.text = item.time
 
-            Picasso.get().load(item.authorPhotoUrl) //is this efficient?
+            Picasso.get().load(item.authorPhotoUrl)
                 .transform(CircleTransform())
                 .placeholder(R.drawable.avatar_placeholder).into(itemView.imageView)
         }
@@ -65,7 +64,7 @@ class MessagesAdapter(
         ItemVH(itemView) {
         override fun onBind(item: Item) {
             item as Item.LoadingErrorCard
-            itemView.findViewById<Button>(R.id.retry)
+            itemView.retry
                 .setOnClickListener { onRetryClicked(item.pageToken) }
         }
     }
@@ -86,7 +85,6 @@ class MessagesAdapter(
         override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
             if (oldItem is Item.Message && newItem is Item.Message)
                 return oldItem.id == newItem.id
-
             return false
         }
     }
@@ -109,7 +107,7 @@ class MessagesAdapter(
             recyclerView: RecyclerView,
             viewHolder: RecyclerView.ViewHolder
         ): Int {
-            if (viewHolder !is MessagesAdapter.MessageVH) return 0;
+            if (viewHolder !is MessageVH) return 0;
             return super.getSwipeDirs(recyclerView, viewHolder)
         }
     }

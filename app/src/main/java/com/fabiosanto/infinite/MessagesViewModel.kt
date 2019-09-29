@@ -14,13 +14,15 @@ import java.util.*
 class MessagesViewModel : ViewModel(), CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
 
+    private val RELATIVE_TIME_THRESHOLD = 10 * DateUtils.HOUR_IN_MILLIS
+
     private val repo = Repo()
-    private val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+    private val rawDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+    private val readableDateFormatter = SimpleDateFormat("h:mm a '•' d MMM yyyy", Locale.getDefault())
+    private val nowMillis = System.currentTimeMillis()
 
     private val items by lazy {
-        MutableLiveData<List<Item>>().apply {
-            postValue(arrayListOf())
-        }
+        MutableLiveData<List<Item>>()
     }
 
     private val viewState by lazy {
@@ -41,6 +43,7 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
 
     fun loadMore(pageToken: String?) = launch {
         val list = items.value ?: arrayListOf()
+
         val newList = arrayListOf<Item>()
 
         try {
@@ -48,15 +51,17 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
             val messages = resultPair.second
             val newPageToken = resultPair.first
 
-            list.filterTo(newList, { it is Item.Message }) //tobe improved!
+            list.filterTo(newList, { it is Item.Message })
             messages.mapTo(newList, { getMessageItem(it) })
-            newList.add(Item.LoadingFooter(newPageToken))
+
+            if (messages.isNotEmpty())                          //if no more messages don't add a loading footer
+                newList.add(Item.LoadingFooter(newPageToken))
 
             items.postValue(newList)
             viewState.postValue(ViewState.READY)
 
         } catch (e: Exception) {
-
+            e.printStackTrace()
             if (list.isNotEmpty() && pageToken != null) {
                 list.filterTo(newList, { it is Item.Message })
                 newList.add(Item.LoadingErrorCard(pageToken))
@@ -68,21 +73,28 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
     }
 
     private fun getMessageItem(data: MessageData): Item.Message {
-
         val authorPhoto = Repo.BASE_URL + data.author.photoUrl
-        val timeMillis = dateFormatter.parse(data.updated)?.time ?: 0
-        val timeString = DateUtils.getRelativeTimeSpanString(
-            timeMillis,
-            System.currentTimeMillis(),
-            DateUtils.MINUTE_IN_MILLIS
-        )
+        val timeMillis = rawDateFormatter.parse(data.updated)?.time ?: nowMillis
+        val timeString = getFormattedTime(timeMillis)
         return Item.Message(
             data.id,
             data.author.name,
             authorPhoto,
             data.content,
-            timeString.toString()
+            timeString
         )
+    }
+
+    private fun getFormattedTime(timeMillis: Long): String {
+        if (System.currentTimeMillis() - timeMillis > RELATIVE_TIME_THRESHOLD) {
+            return readableDateFormatter.format(Date(timeMillis))
+        } else {
+            return DateUtils.getRelativeTimeSpanString(
+                timeMillis,
+                nowMillis,
+                DateUtils.MINUTE_IN_MILLIS
+            ).toString()
+        }
     }
 
     fun itemDismissed(position: Int) {
