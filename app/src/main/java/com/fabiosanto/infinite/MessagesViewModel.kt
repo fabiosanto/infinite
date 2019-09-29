@@ -42,7 +42,10 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
     }
 
     fun loadMore(pageToken: String?) = launch {
-        val list = items.value ?: arrayListOf()
+        var list = items.value ?: arrayListOf()
+
+        if (pageToken==null)
+            list = arrayListOf()
 
         val newList = arrayListOf<Item>()
 

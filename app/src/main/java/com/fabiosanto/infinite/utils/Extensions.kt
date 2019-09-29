@@ -1,4 +1,4 @@
-package com.fabiosanto.infinite
+package com.fabiosanto.infinite.utils
 
 import android.content.res.Resources
 

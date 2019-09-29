@@ -1,4 +1,4 @@
-package com.fabiosanto.infinite
+package com.fabiosanto.infinite.utils
 
 import android.graphics.*
 import com.squareup.picasso.Transformation

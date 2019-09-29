@@ -1,13 +1,13 @@
-package com.fabiosanto.infinite
+package com.fabiosanto.infinite.custom
 
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.AccelerateInterpolator
+import com.fabiosanto.infinite.R
 
 class LoadingBlock(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private val paint = Paint().apply {

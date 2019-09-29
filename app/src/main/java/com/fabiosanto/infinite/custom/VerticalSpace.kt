@@ -1,8 +1,9 @@
-package com.fabiosanto.infinite
+package com.fabiosanto.infinite.custom
 
 import android.graphics.Rect
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
+import com.fabiosanto.infinite.utils.px
 
 class VerticalSpace : RecyclerView.ItemDecoration() {
     override fun getItemOffsets(
