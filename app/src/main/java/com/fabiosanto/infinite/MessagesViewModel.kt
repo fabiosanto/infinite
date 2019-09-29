@@ -18,7 +18,8 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
 
     private val repo = Repo()
     private val rawDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-    private val readableDateFormatter = SimpleDateFormat("h:mm a '•' d MMM yyyy", Locale.getDefault())
+    private val readableDateFormatter =
+        SimpleDateFormat("h:mm a '•' d MMM yyyy", Locale.getDefault())
     private val nowMillis = System.currentTimeMillis()
 
     private val items by lazy {
@@ -44,7 +45,7 @@ class MessagesViewModel : ViewModel(), CoroutineScope {
     fun loadMore(pageToken: String?) = launch {
         var list = items.value ?: arrayListOf()
 
-        if (pageToken==null)
+        if (pageToken == null)
             list = arrayListOf()
 
         val newList = arrayListOf<Item>()
